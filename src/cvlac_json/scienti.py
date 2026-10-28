@@ -376,7 +376,7 @@ def item_section(data, chain):
             if it.get("origin") == "scienti":
                 continue
             t = [norm(x) for x in (it.get("type") or "").split(" - ")]
-            k = next((i for i, (a, b) in enumerate(zip(names, t)) if a != b), min(len(names), len(t)))
+            k = next((i for i, (a, b) in enumerate(zip(names, t, strict=False)) if a != b), min(len(names), len(t)))
             if k > score:
                 best, score = sec, k
     if best:

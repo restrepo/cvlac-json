@@ -120,7 +120,7 @@ def trailing_blocks(frag):
     out = {}
     parts = re.split(r"<b>\s*(Palabras|Areas|Áreas|Sectores)\s*:\s*</b>", frag, flags=re.I)
     rest = parts[0]
-    for name, block in zip(parts[1::2], parts[2::2]):
+    for name, block in zip(parts[1::2], parts[2::2], strict=False):
         key = {"palabras": "keywords", "areas": "areas", "áreas": "areas", "sectores": "sectors"}[name.lower()]
         out[key] = split_list(text(block))
     return rest, out
@@ -345,7 +345,7 @@ def parse_projects(frag):
 def parse_events(frag):
     out = []
     blocks = re.split(r"(<img[^>]*>)?\s*<b>\s*\d+\s*</b>\s*(?=<i>\s*<b>\s*Nombre del evento)", frag)
-    for img, b in zip(blocks[1::2], blocks[2::2]):
+    for img, b in zip(blocks[1::2], blocks[2::2], strict=False):
         head, *rest = re.split(r"<b>\s*(Productos asociados|Instituciones asociadas|Participantes)\s*</b>", b)
         f = labeled_fields(head)
         ev = {
@@ -358,7 +358,7 @@ def parse_events(frag):
         if m:
             ev.update(start=m.group(1) or None, end=m.group(2) or None, place=clean(m.group(3)))
         ev.update(products=[], institutions=[], participants=[])
-        for name, blk in zip(rest[0::2], rest[1::2]):
+        for name, blk in zip(rest[0::2], rest[1::2], strict=False):
             for li in re.findall(r"<li[^>]*>(.*?)</li>", blk, flags=re.I | re.S):
                 g = labeled_fields(li + "<br>")
                 if name.startswith("Productos"):
@@ -663,7 +663,9 @@ def build(page, cod_rh):
         if title.lower().startswith("trabajos dirigidos") and title in raw_secs:
             raw_items = items(raw_secs[title])
             if len(raw_items) == len(out["sections"][title]):
-                out["sections"][title] = [parse_thesis(it, raw, owner) for it, raw in zip(out["sections"][title], raw_items)]
+                out["sections"][title] = [
+                    parse_thesis(it, raw, owner) for it, raw in zip(out["sections"][title], raw_items, strict=False)
+                ]
     for title, frag in secs:
         its = items(frag)
         if title.lower() in BIBLIO or any((h or "").startswith("Producción bibliográfica") for h, _, _ in its):

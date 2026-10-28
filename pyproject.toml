@@ -9,7 +9,7 @@ description = "Turn a researcher's public CvLAC page (Minciencias, Colombia) int
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [{ name = "Diego Restrepo", email = "restrepo@udea.edu.co" }]
 keywords = ["cvlac", "scienti", "minciencias", "colombia", "bibliometrics", "cris", "impactu", "ror"]
 classifiers = [
@@ -20,18 +20,18 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Information Analysis",
     "Typing :: Typed",
 ]
 dependencies = []   # standard library only
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.6", "build>=1.2", "twine>=5"]
+dev = ["pytest>=8", "pytest-cov>=5", "ruff==0.17.3", "build>=1.2", "twine>=5"]
 
 [project.scripts]
 cvlac-json = "cvlac_json.cli:main"
@@ -65,7 +65,7 @@ branch = true
 
 [tool.ruff]
 line-length = 130
-target-version = "py39"
+target-version = "py310"
 src = ["src", "tests"]
 
 [tool.ruff.lint]

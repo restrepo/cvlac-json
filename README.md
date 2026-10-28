@@ -6,7 +6,7 @@
 
 Convierte la página pública del **CvLAC** de un investigador (Minciencias, Colombia) en un único documento JSON: perfil, formación, experiencia, producción bibliográfica en el esquema de obras de [ImpactU](https://impactu.colav.co), proyectos, eventos, tesis dirigidas y todas las demás secciones.
 
-- Sin dependencias: solo la biblioteca estándar de Python (3.9 o superior).
+- Sin dependencias: solo la biblioteca estándar de Python (3.10 o superior).
 - Agrega los **identificadores ROR** de las instituciones de la experiencia y de las tesis.
 - Con una clave de [apis.colav.co](https://apis.colav.co), agrega los **identificadores Scienti** (`COD_RH-COD_PRODUCTO`, `-COD_PROYECTO`, `-COD_EVENTO`) de las entradas que coinciden.
 
@@ -43,11 +43,11 @@ La clave de apis.colav.co se toma, en este orden, de `--apikey`, de la variable 
 ```python
 from cvlac_json import extract
 
-data = extract("0000026549", scienti="off")      # descarga y analiza la página
+data = extract("0000026549", scienti="off")  # descarga y analiza la página
 print(data["profile"]["Nombre"], len(data["works"]))
 
 html = open("cv.html", encoding="latin-1").read()
-data = extract("0000026549", html=html, ror=False) # página guardada
+data = extract("0000026549", html=html, ror=False)  # página guardada
 ```
 
 ## Esquema del JSON

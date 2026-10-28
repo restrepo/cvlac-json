@@ -7,7 +7,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y l
 ## [0.1.0] - 2026-10-28
 
 ### Agregado
-- Comando `cvlac-json` y función `cvlac_json.extract()`.
+- Comando `cvlac-json` y función `cvlac_json.extract()`, para Python 3.10 o superior, sin dependencias.
 - Perfil, identificadores, formación, experiencia (con años y ROR), áreas, idiomas, líneas, reconocimientos, proyectos, eventos y todas las demás secciones.
 - Producción bibliográfica en el esquema de obras de ImpactU, con las afiliaciones del dueño del CV según el año.
 - Tesis dirigidas con título, director, codirectores, estudiantes, institución con ROR, estado y programa.
