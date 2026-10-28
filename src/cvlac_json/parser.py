@@ -207,6 +207,99 @@ def parse_profile(frag):
     return prof
 
 
+# Nationalities whose names usually carry two surnames (paternal + maternal)
+TWO_SURNAMES = {
+    "colombiana",
+    "colombiano",
+    "española",
+    "español",
+    "mexicana",
+    "mexicano",
+    "venezolana",
+    "venezolano",
+    "peruana",
+    "peruano",
+    "ecuatoriana",
+    "ecuatoriano",
+    "chilena",
+    "chileno",
+    "argentina",
+    "argentino",
+    "boliviana",
+    "boliviano",
+    "cubana",
+    "cubano",
+    "uruguaya",
+    "uruguayo",
+    "paraguaya",
+    "paraguayo",
+    "costarricense",
+    "panameña",
+    "panameño",
+    "hondureña",
+    "hondureño",
+    "salvadoreña",
+    "salvadoreño",
+    "guatemalteca",
+    "guatemalteco",
+    "nicaragüense",
+    "dominicana",
+    "dominicano",
+    "puertorriqueña",
+    "puertorriqueño",
+}
+PARTICLES = {"de", "del", "la", "las", "los", "y", "da", "das", "do", "dos", "van", "von", "der", "di", "le"}
+
+
+def split_name(raw_frag, prof):
+    """{full_name, first_names, last_names, name_split_by} for the profile, as in ImpactU's person record.
+
+    The page writes the name as 'NAMES&nbsp;SURNAME1&nbsp;SURNAME2'. Those parts are used when they agree with
+    'Nombre en citaciones' ('SURNAME1 SURNAME2, NAMES'); else the citation name decides how many words are
+    surnames; else the nationality (two surnames for Hispanic nationalities, one otherwise).
+    """
+    full = prof.get("Nombre")
+    if not full:
+        return {}
+    words = full.split()
+    cit = prof.get("Nombre en citaciones") or ""
+    cit_last = norm(cit.split(",", 1)[0]) if "," in cit else ""
+    parts = None
+    m = re.search(r"<td[^>]*>\s*Nombre\s*</td>\s*<td[^>]*>(.*?)</td>", raw_frag or "", flags=re.I | re.S)
+    if m:
+        parts = [p for p in (clean(text(x)) for x in re.split(r"&nbsp;|&#160;|\xa0", m.group(1))) if p]
+    if parts and len(parts) >= 2 and (not cit_last or norm(" ".join(parts[1:])) == cit_last):
+        first, last, by = parts[0].split(), parts[1:], "page"
+    elif cit_last and norm(" ".join(words)).endswith(cit_last):
+        k = len(cit_last.split())
+        first, last, by = words[:-k], [" ".join(words[-k:])], "citation name"
+    else:
+        n = 2 if norm(prof.get("Nacionalidad")) in {norm(x) for x in TWO_SURNAMES} else 1
+        idx, count = len(words), 0
+        while idx > 1 and count < n:  # take surnames from the end, keeping particles ('de la Cruz') with them
+            idx -= 1
+            while idx > 1 and words[idx - 1].lower() in PARTICLES:
+                idx -= 1
+            count += 1
+        first, last, by = words[:idx], [" ".join(words[idx:])] if n == 1 else _surnames(words[idx:]), "nationality"
+    if by == "citation name" and len(cit_last.split()) >= 2:
+        last = _surnames(last[0].split())
+    return {"full_name": " ".join(words), "first_names": first, "last_names": last, "name_split_by": by}
+
+
+def _surnames(ws):
+    """['de', 'la', 'Cruz', 'Pérez'] -> ['de la Cruz', 'Pérez'] (particles stay with the next word)."""
+    out, cur = [], []
+    for w in ws:
+        cur.append(w)
+        if w.lower() not in PARTICLES:
+            out.append(" ".join(cur))
+            cur = []
+    if cur:
+        out.append(" ".join(cur))
+    return out
+
+
 def parse_links(frag):
     out = []
     for lk in links(frag):
@@ -630,6 +723,7 @@ def build(page, cod_rh):
         low = title.lower()
         if low == "hoja de vida":
             out["profile"] = parse_profile(frag)
+            out["profile"].update(split_name(raw_secs.get(title), out["profile"]))
         elif low.startswith("identificadores"):
             out["identifiers"] = parse_links(frag)
         elif low.startswith("redes sociales"):

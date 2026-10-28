@@ -87,8 +87,20 @@ Objeto con las filas de la tabla "Hoja de vida" de la página; las claves son la
 | `Nacionalidad` | string | "Colombiana" |
 | `Sexo` | string | "Femenino" |
 | `notes` | array de string | Notas sueltas de la hoja de vida, p. ej. "Par evaluador reconocido por Minciencias" |
+| `full_name` | string | Nombre completo, igual a `Nombre` | "Ana María Pérez Gómez" |
+| `first_names` | array de string | Nombres, como en el registro de persona de ImpactU | `["Ana", "María"]` |
+| `last_names` | array de string | Apellidos, uno por elemento; las partículas van con el apellido (`"de la Cruz"`) | `["Pérez", "Gómez"]` |
+| `name_split_by` | string | Cómo se separó el nombre: `page`, `citation name` o `nationality` (ver abajo) | `page` |
 
 El nombre y el nombre en citaciones se usan para reconocer al dueño del CV entre los autores.
+
+**Nombres y apellidos.** Se conservan `Nombre` y `Nombre en citaciones` y se agregan `full_name`, `first_names` y `last_names`, como en ImpactU. La separación usa, en este orden:
+
+1. `page`: la página escribe el nombre como `NOMBRES&nbsp;APELLIDO1&nbsp;APELLIDO2`; esas partes se usan si coinciden con los apellidos de `Nombre en citaciones` (lo que va antes de la coma).
+2. `citation name`: si no coinciden, el número de palabras antes de la coma de `Nombre en citaciones` dice cuántas palabras finales de `Nombre` son apellidos.
+3. `nationality`: si no hay nombre en citaciones, dos apellidos para nacionalidades hispanas (Colombiana, Española, Mexicana…) y uno para las demás.
+
+En los cinco CV de prueba la separación salió de la página (`page`) y coincidió con el nombre en citaciones.
 
 ## 6. `identifiers` y `academic_networks`
 

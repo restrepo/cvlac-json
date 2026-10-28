@@ -124,3 +124,55 @@ def test_counts(data):
     c = data["counts"]
     assert c["works"] == 2 and c["endorsed_works"] == 1 and c["projects"] == 1
     assert c["Trabajos dirigidos/tutorías"] == 2
+
+
+def test_profile_name_parts(data):
+    p = data["profile"]
+    assert p["Nombre"] == "Ana María Pérez Gómez"  # original fields are kept
+    assert (p["full_name"], p["first_names"], p["last_names"], p["name_split_by"]) == (
+        "Ana María Pérez Gómez",
+        ["Ana", "María"],
+        ["Pérez", "Gómez"],
+        "page",
+    )
+
+
+@pytest.mark.parametrize(
+    ("prof", "raw", "first", "last", "by"),
+    [
+        (
+            {"Nombre": "José Edgar Zapata Montoya", "Nombre en citaciones": "ZAPATA MONTOYA, JOSÉ EDGAR"},
+            "<td>Nombre</td><td>José Edgar&nbsp;Zapata&nbsp;Montoya</td>",
+            ["José", "Edgar"],
+            ["Zapata", "Montoya"],
+            "page",
+        ),
+        (
+            {"Nombre": "Rosa Ospina", "Nombre en citaciones": "OSPINA, ROSA"},
+            "<td>Nombre</td><td>Rosa&nbsp;Ospina&nbsp;</td>",
+            ["Rosa"],
+            ["Ospina"],
+            "page",
+        ),
+        (
+            {"Nombre": "Pedro Luis de la Cruz Ruiz", "Nombre en citaciones": "DE LA CRUZ RUIZ, PEDRO LUIS"},
+            None,
+            ["Pedro", "Luis"],
+            ["de la Cruz", "Ruiz"],
+            "citation name",
+        ),
+        (
+            {"Nombre": "Ana María Pérez Gómez", "Nacionalidad": "Colombiana"},
+            None,
+            ["Ana", "María"],
+            ["Pérez", "Gómez"],
+            "nationality",
+        ),
+        ({"Nombre": "Hans Peter Müller", "Nacionalidad": "Alemana"}, None, ["Hans", "Peter"], ["Müller"], "nationality"),
+    ],
+)
+def test_split_name(prof, raw, first, last, by):
+    from cvlac_json.parser import split_name
+
+    out = split_name(raw, prof)
+    assert (out["first_names"], out["last_names"], out["name_split_by"]) == (first, last, by)
