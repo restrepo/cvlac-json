@@ -4,6 +4,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y l
 
 ## [Sin publicar]
 
+## [0.3.0] - 2026-10-28
+
 ### Agregado
 - `profile.full_name`, `profile.first_names` y `profile.last_names`, como en ImpactU, separados con las partes del nombre de la página, el nombre en citaciones o la nacionalidad (`profile.name_split_by`).
 
@@ -21,6 +23,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y l
 - Tesis dirigidas con título, director, codirectores, estudiantes, institución con ROR, estado y programa.
 - Identificadores Scienti por DOI o título (`--scienti auto|full|off`, `--apikey`).
 
-[Sin publicar]: https://github.com/restrepo/cvlac-json/compare/v0.2.0...HEAD
+[Sin publicar]: https://github.com/restrepo/cvlac-json/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/restrepo/cvlac-json/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/restrepo/cvlac-json/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/restrepo/cvlac-json/releases/tag/v0.1.0
