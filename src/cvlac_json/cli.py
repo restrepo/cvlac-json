@@ -5,7 +5,8 @@ import json
 import sys
 
 from . import __version__
-from .parser import extract, normalize_cod_rh
+from .parser import extract, fetch, normalize_cod_rh, stages
+from .progress import Progress
 
 
 def build_parser():
@@ -32,6 +33,11 @@ def build_parser():
         '(it stays in the shell history; prefer --apikey "$(cat FILE)")',
     )
     ap.add_argument("--ror", choices=["auto", "off"], default="auto", help="look institutions up in the ROR API (default auto)")
+    ap.add_argument(
+        "--no-progress",
+        action="store_true",
+        help="do not show the progress bar (it is shown only when standard error is a terminal)",
+    )
     ap.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     return ap
 
@@ -47,23 +53,25 @@ def main(argv=None):
     if a.html:
         with open(a.html, encoding="latin-1") as fh:
             page = fh.read()
-    log = lambda msg: print(msg, file=sys.stderr)
-    if page is None and a.save_html:
-        from .parser import fetch
-
-        page = fetch(cod)
-        with open(a.save_html, "w", encoding="latin-1", errors="replace") as fh:
-            fh.write(page)
-    data = extract(
-        cod,
-        html=page,
-        scienti=a.scienti,
-        institution=a.institution,
-        model_year=a.model_year,
-        apikey=a.apikey,
-        ror=a.ror == "auto",
-        log=log,
-    )
+    ror = a.ror == "auto"
+    bar = Progress(stages(html=page, scienti=a.scienti, ror=ror), stream=sys.stderr, enabled=False if a.no_progress else None)
+    with bar:
+        if page is None and a.save_html:  # download here to keep a copy; extract() then parses it
+            bar("CvLAC page")
+            page = fetch(cod)
+            with open(a.save_html, "w", encoding="latin-1", errors="replace") as fh:
+                fh.write(page)
+        data = extract(
+            cod,
+            html=page,
+            scienti=a.scienti,
+            institution=a.institution,
+            model_year=a.model_year,
+            apikey=a.apikey,
+            ror=ror,
+            log=bar.write,
+            progress=bar,
+        )
     out = a.output or f"cvlac_{cod}.json"
     text = json.dumps(data, ensure_ascii=False, indent=1)
     if out == "-":
@@ -72,8 +80,9 @@ def main(argv=None):
         with open(out, "w", encoding="utf-8") as fh:
             fh.write(text)
     c = data["counts"]
-    log(
+    print(
         f"wrote {out}: {data['profile'].get('Nombre') or '?'} | works {c['works']} (endorsed {c['endorsed_works']}), "
-        f"projects {c['projects']}, events {c['events']}, other sections {len(data['sections'])}"
+        f"projects {c['projects']}, events {c['events']}, other sections {len(data['sections'])}",
+        file=sys.stderr,
     )
     return 0

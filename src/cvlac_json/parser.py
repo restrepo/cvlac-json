@@ -743,25 +743,58 @@ def tidy(data):
     return data
 
 
-def extract(cod_rh, html=None, scienti="auto", institution=None, model_year=None, apikey=None, ror=True, log=print):
+SCIENTI_STAGES = [
+    "Scienti info",
+    "Scienti products",
+    "Scienti projects",
+    "Scienti events",
+    "Scienti networks",
+    "Scienti patents",
+    "Scienti matching",
+]
+
+
+def stages(html=None, scienti="auto", ror=True):
+    """Names of the progress stages extract() reports, in order."""
+    out = [] if html is not None else ["CvLAC page"]
+    out.append("Parsing")
+    if scienti != "off":
+        out += SCIENTI_STAGES
+    if ror:
+        out.append("ROR")
+    return [*out, "Finishing"]
+
+
+def extract(
+    cod_rh, html=None, scienti="auto", institution=None, model_year=None, apikey=None, ror=True, log=print, progress=None
+):
     """Build the CvLAC JSON for COD_RH.
 
     html: the page's HTML (str) instead of downloading it. scienti: "auto" (Scienti ids of matching
     entries when an apis.colav.co key is available), "full" (also the Scienti records missing from
     the page) or "off". ror: look experience and thesis institutions up in the ROR API.
+    progress: optional callable progress(stage, done=None, total=None), called with the names from
+    stages(); the command line passes a cvlac_json.progress.Progress bar.
     """
     from . import ror as ror_affiliations
     from . import scienti as scienti_match
 
+    progress = progress or (lambda stage, done=None, total=None: None)
     cod = normalize_cod_rh(cod_rh)
+    if html is None:
+        progress("CvLAC page")
     page = html if html is not None else fetch(cod)
+    progress("Parsing")
     data = build(page, cod)
     if scienti != "off":  # first, so works added from Scienti get affiliations too
         try:
-            scienti_match.enrich(data, cod, institution, model_year, add_records=scienti == "full", key=apikey, log=log)
+            scienti_match.enrich(
+                data, cod, institution, model_year, add_records=scienti == "full", key=apikey, log=log, progress=progress
+            )
         except RuntimeError as e:
             log(f"scienti: skipped ({e})")
-    ror_affiliations.enrich(data, ror=ror)
+    ror_affiliations.enrich(data, ror=ror, progress=progress)
+    progress("Finishing")
     count(data)
     tidy(data)
     return data

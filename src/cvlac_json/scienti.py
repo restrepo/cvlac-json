@@ -485,15 +485,21 @@ def add_from_scienti(data, products, used, projects, events, networks, owner_id)
 
 
 # ---------------------------------------------------------------- main entry
-def enrich(data, cod_rh, institution=None, model_year=None, add_records=False, key=None, log=print):
+def enrich(data, cod_rh, institution=None, model_year=None, add_records=False, key=None, log=print, progress=None):
+    progress = progress or (lambda stage, done=None, total=None: None)
     key = apikey(key)
     if not key:
         log("scienti: no API key ($COLAV_APIKEY or ~/.config/colav/apikey); skipped")
         return False
+    progress("Scienti info")
     info = {x["institution"]: x["model_year"] for x in get("/scienti/info", key, get="resume")}
     order = [institution] if institution else [i for i in INSTITUTIONS if i in info] + [i for i in info if i not in INSTITUTIONS]
     products, inst = [], None
-    for i in order:
+    for n, i in enumerate(order, 1):
+        if len(order) > 1:  # several dumps to try: show which one
+            progress("Scienti products", n - 1, len(order))
+        else:
+            progress("Scienti products")
         my = model_year or info.get(i)
         try:
             products = get("/scienti/product", key, COD_RH=cod_rh, model_year=my, institution=i)
@@ -513,10 +519,17 @@ def enrich(data, cod_rh, institution=None, model_year=None, add_records=False, k
         }
         return False
     my = model_year or info[inst]
-    fetch = lambda ep: (lambda d: d if isinstance(d, list) else [])(
-        get(f"/scienti/{ep}", key, COD_RH=cod_rh, model_year=my, institution=inst)
-    )
-    projects, events, networks, patents = (fetch(ep) for ep in ("project", "event", "network", "patent"))
+
+    def fetch(ep, stage):
+        progress(stage)
+        d = get(f"/scienti/{ep}", key, COD_RH=cod_rh, model_year=my, institution=inst)
+        return d if isinstance(d, list) else []
+
+    projects = fetch("project", "Scienti projects")
+    events = fetch("event", "Scienti events")
+    networks = fetch("network", "Scienti networks")
+    patents = fetch("patent", "Scienti patents")
+    progress("Scienti matching")
     index = index_products(products, patents)
 
     used = set()

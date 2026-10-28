@@ -35,6 +35,15 @@ cvlac-json 0000026549 --scienti off --ror off # solo la página pública, sin ot
 | `--institution`, `--model-year` | Volcado de Scienti (`udea`, `univalle`, `uec`, `unaula`) y año del modelo. |
 | `--apikey CLAVE` | Clave de apis.colav.co para esta ejecución. |
 | `--ror auto` / `off` | Consulta o no el registro ROR. |
+| `--no-progress` | No muestra la barra de progreso. |
+
+Mientras trabaja, el comando muestra en la terminal una barra de progreso con la etapa actual (descarga, análisis, cada consulta a Scienti, ROR) y el tiempo transcurrido:
+
+```text
+⠼ ████████░░░░░░░░░░░░░░░░░░░░░░  27% 4/11 Scienti products 1:12
+```
+
+La consulta de productos de Scienti puede tardar varios minutos en un CV grande: el indicador que gira y el reloj muestran que el programa sigue trabajando. La barra va por la salida de error y solo aparece cuando esta es una terminal, así que no se mezcla con el JSON (`-o -`) ni con las redirecciones a archivos.
 
 La clave de apis.colav.co se toma, en este orden, de `--apikey`, de la variable de entorno `COLAV_APIKEY` o del archivo `~/.config/colav/apikey`. Nunca se imprime. Para no dejarla en el historial de la terminal, use `--apikey "$(cat archivo)"`.
 
@@ -47,7 +56,10 @@ data = extract("0000026549", scienti="off")  # descarga y analiza la página
 print(data["profile"]["Nombre"], len(data["works"]))
 
 html = open("cv.html", encoding="latin-1").read()
-data = extract("0000026549", html=html, ror=False)  # página guardada
+data = extract("0000026549", html=html, ror=False)
+
+# progreso propio: progress(etapa, hechas=None, total=None)
+data = extract("0000026549", progress=lambda etapa, hechas=None, total=None: print(etapa))  # página guardada
 ```
 
 ## Esquema del JSON

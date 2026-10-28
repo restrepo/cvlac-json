@@ -128,7 +128,7 @@ def lookup(name, cache):
     return cache[k]
 
 
-def thesis_affiliations(data, cache, ror=True):
+def thesis_affiliations(data, cache, ror=True, lookup=lookup):
     """Supervised theses: the institution after the title goes, with its ROR id, to the advisor and the student(s)."""
     n = 0
     for _title, items in data.get("sections", {}).items():
@@ -161,9 +161,27 @@ def thesis_affiliations(data, cache, ror=True):
     return n
 
 
-def enrich(data, ror=True):
+def enrich(data, ror=True, progress=None):
     """Add start_year/end_year/ror to data['experience'] and owner affiliations to data['works']."""
     cache = _load_cache() if ror else {}
+    progress = progress or (lambda stage, done=None, total=None: None)
+    names = {norm(e.get("institution")) for e in data.get("experience", []) if e.get("institution")}
+    names |= {
+        norm(it["institution"]["name"])
+        for v in data.get("sections", {}).values()
+        for it in v
+        if isinstance(it.get("institution"), dict) and it["institution"].get("name")
+    }
+    names.discard("")
+    seen = set()
+
+    def counted_lookup(name, cache):
+        seen.add(norm(name))
+        progress("ROR", len(seen), len(names))
+        return lookup(name, cache)
+
+    if ror:
+        progress("ROR", 0, len(names))
     exp = data.get("experience", [])
     errors = 0
     for e in exp:
@@ -172,7 +190,7 @@ def enrich(data, ror=True):
         r = None
         if ror and e.get("institution"):
             try:
-                r = lookup(e["institution"], cache)
+                r = counted_lookup(e["institution"], cache)
             except OSError:
                 errors += 1
         e["ror"] = {"id": r["id"], "name": r["name"], "match": r["match"]} if r else None
@@ -216,7 +234,7 @@ def enrich(data, ror=True):
                 au["affiliations"] = list(affs.values())
                 n_aff += bool(affs)
     data["counts"]["works_with_affiliation"] = n_aff
-    n_th = thesis_affiliations(data, cache if ror else {}, ror)
+    n_th = thesis_affiliations(data, cache if ror else {}, ror, lookup=counted_lookup)
     if ror:
         _save_cache(cache)
     found = sum(1 for e in exp if e.get("ror"))
