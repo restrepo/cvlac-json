@@ -13,7 +13,7 @@ El esquema se verificó contra cinco CV reales de profesores de la UdeA (2026-10
 ```bash
 cvlac-json COD_RH [-o salida.json] [--html pagina_guardada.html] [--save-html pagina.html]
            [--scienti auto|full|off] [--institution udea] [--model-year 2024]
-           [--apikey CLAVE] [--ror auto|off]
+           [--apikey CLAVE] [--siiu auto|off] [--ror auto|off]
 ```
 
 El JSON combina tres fuentes:
@@ -45,7 +45,8 @@ Con la configuración por defecto, **todo registro proviene de la página públi
 | Obra del CvLAC | `cvlac:COD_RH:n` (n = orden en la página) | `cvlac:0000000001:1` | `works[].id` |
 | Obra solo en Scienti (`--scienti full`) | `scienti:COD_RH-COD_PRODUCTO` | `scienti:0000000001-10` | `works[].id` |
 | Producto Scienti | `COD_RH-COD_PRODUCTO` | `0000000001-20912` | `works[].external_ids`, `works[].cvlac.scienti.id`, `sections.*[].scienti.id` |
-| Proyecto Scienti | `COD_RH-COD_PROYECTO` | `0000000001-1` | `projects[].scienti.id` |
+| Proyecto Scienti | `COD_RH-COD_PROYECTO` | `0000000001-1` | `projects[].scienti.id`, `projects[].external_ids` |
+| Proyecto SIIU (UdeA) | `AAAA-n` | `2014-361` | `projects[].siiu.id`, `projects[].external_ids` |
 | Evento Scienti | `COD_RH-COD_EVENTO` | `0000000001-4` | `events[].scienti.id` |
 | Red Scienti | `COD_RH-COD_RED` | | `sections["Redes de conocimiento especializado"][].scienti.id` |
 | ROR | id corto (9 caracteres) y URL | `03bp5hc83`, `https://ror.org/03bp5hc83` | `affiliations[].id`, `affiliations[].external_ids`, `experience[].ror.id`, `institution.id` |
@@ -74,6 +75,7 @@ Con la configuración por defecto, **todo registro proviene de la página públi
 | `counts` | object | Conteos (§15). |
 | `affiliations_from_experience` | object | Resumen de la búsqueda ROR y las afiliaciones asignadas (§16). |
 | `scienti` | object | Resumen del cruce con Scienti; solo con clave de apis.colav.co (§17). |
+| `siiu` | object | Resumen del cruce con los proyectos de SIIU de la UdeA; solo con clave de apis.colav.co (§17). |
 
 ## 5. `profile`
 
@@ -202,6 +204,8 @@ Incluye las secciones Artículos, Libros, Capítulos de libro, Textos en publica
 | `duration_months` | integer o null | Duración en meses | |
 | `summary` | string o null | Resumen | |
 | `scienti` | object o null | Coincidencia con un proyecto Scienti (§17) | `{"id": "0000000001-1", …}` |
+| `external_ids` | array | `{provenance, source, id}` con `source` `scienti` o `siiu`, como en las obras | `[{"provenance": "siiu", "source": "siiu", "id": "2014-361"}]` |
+| `siiu` | object o null | Coincidencia con un proyecto de SIIU (§17) | `{"id": "2014-361", "status": "liquidado", …}` |
 
 El CvLAC no enlaza proyectos con productos: no presente un proyecto como fuente de una obra sin otra evidencia (OpenAlex `awards`, compromisos de SIIU).
 
@@ -302,7 +306,7 @@ En las obras, la afiliación es **inferida**: significa "el dueño trabajaba all
 
 `affiliations_from_experience` resume el proceso: `ror_api`, `experience` (entradas de experiencia), `experience_with_ror`, `works_with_affiliation`, `theses_with_affiliation`, `lookup_errors`.
 
-## 17. Coincidencias con Scienti y objeto `scienti`
+## 17. Coincidencias con Scienti y SIIU
 
 **Objeto de coincidencia** (`works[].cvlac.scienti`, `projects[].scienti`, `events[].scienti`, `sections.*[].scienti`):
 
@@ -329,6 +333,32 @@ En las obras, la afiliación es **inferida**: significa "el dueño trabajaba all
 | `not_on_page` | object | Registros Scienti sin coincidencia, por la sección a la que pertenecerían: `works`, `sections` (por título), `projects`, `events`, `networks`. Con `--scienti full` se llama `added_from_scienti` y esos registros se agregan al JSON. |
 | `not_on_page_note` | string | Explicación del campo anterior. |
 | `note` | string | Solo si el COD_RH no está en ningún volcado. |
+
+**Proyectos de SIIU** (`projects[].siiu`, objeto `siiu` del nivel superior). SIIU es el sistema de información de investigación de la UdeA. Con clave de apis.colav.co (y sin `--siiu off`), se buscan en SIIU los proyectos del dueño con el número de documento de su registro de autor de Scienti. Ese número solo se usa en la consulta: no se imprime ni se guarda. Un proyecto del CvLAC coincide con uno de SIIU cuando:
+
+- su título normalizado es igual al nombre completo del proyecto en SIIU (o a su nombre corto, si tiene al menos 25 caracteres y 4 palabras), y
+- su año de inicio cae dentro del periodo del proyecto en SIIU, con un año de margen a cada lado. El periodo va del año de registro (o del inicio de la primera etapa, si es anterior) al último fin de etapa, al año de aprobación o al registro más la duración.
+
+Cuando varios proyectos de SIIU tienen el mismo título (propuestas presentadas de nuevo), gana el que se ejecutó (`aprobado`, `en_ejecucion`, `atrasado`, `finalizado`, `liquidado`) frente a los rechazados o en evaluación; después, el de año de inicio más cercano. Los demás quedan en `also`. El código de SIIU se agrega también a `projects[].external_ids` con `source: "siiu"`.
+
+| Campo de `projects[].siiu` | Tipo | Descripción |
+| --- | --- | --- |
+| `id` | string | Código del proyecto en SIIU (`AAAA-n`). |
+| `by`, `evidence[]` | string, array | `title` y `["year"]`. |
+| `shared` | boolean | `true` si el proyecto de SIIU ya se había asignado a otra entrada del CvLAC. |
+| `siiu_title` | string | Nombre completo en SIIU. |
+| `siiu_years` | array de integer | `[primer año, último año]` del periodo usado para comparar. |
+| `status` | string | Estado en SIIU (`finalizado`, `liquidado`, `en_ejecucion`, `rechazado`, `validtec`…). |
+| `also` | array de string | Otros códigos de SIIU con el mismo título y un año compatible. |
+
+| Campo del objeto `siiu` | Tipo | Descripción |
+| --- | --- | --- |
+| `source` | string | `apis.colav.co` |
+| `projects`, `projects_matched` | integer | Proyectos de SIIU del dueño y cuántos se asignaron a un proyecto del CvLAC. |
+| `not_on_page` | array de string | Códigos de SIIU que no coinciden con ningún proyecto de la página. |
+| `rules` | string | Descripción de la regla. |
+
+Si el registro de autor de Scienti no tiene documento, o el investigador no tiene proyectos en SIIU, no hay objeto `siiu`.
 
 ## 18. Diferencias con `--scienti full`
 

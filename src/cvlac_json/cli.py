@@ -32,6 +32,12 @@ def build_parser():
         help="apis.colav.co key for this run, overriding $COLAV_APIKEY and ~/.config/colav/apikey "
         '(it stays in the shell history; prefer --apikey "$(cat FILE)")',
     )
+    ap.add_argument(
+        "--siiu",
+        choices=["auto", "off"],
+        default="auto",
+        help="with Scienti on, add the SIIU code of projects with the same title and a compatible year (default auto)",
+    )
     ap.add_argument("--ror", choices=["auto", "off"], default="auto", help="look institutions up in the ROR API (default auto)")
     ap.add_argument(
         "--no-progress",
@@ -54,7 +60,8 @@ def main(argv=None):
         with open(a.html, encoding="latin-1") as fh:
             page = fh.read()
     ror = a.ror == "auto"
-    bar = Progress(stages(html=page, scienti=a.scienti, ror=ror), stream=sys.stderr, enabled=False if a.no_progress else None)
+    names = stages(html=page, scienti=a.scienti, ror=ror, siiu=a.siiu == "auto")
+    bar = Progress(names, stream=sys.stderr, enabled=False if a.no_progress else None)
     with bar:
         if page is None and a.save_html:  # download here to keep a copy; extract() then parses it
             bar("CvLAC page")
@@ -69,6 +76,7 @@ def main(argv=None):
             model_year=a.model_year,
             apikey=a.apikey,
             ror=ror,
+            siiu=a.siiu == "auto",
             log=bar.write,
             progress=bar,
         )

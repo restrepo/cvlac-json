@@ -485,7 +485,7 @@ def add_from_scienti(data, products, used, projects, events, networks, owner_id)
 
 
 # ---------------------------------------------------------------- main entry
-def enrich(data, cod_rh, institution=None, model_year=None, add_records=False, key=None, log=print, progress=None):
+def enrich(data, cod_rh, institution=None, model_year=None, add_records=False, key=None, log=print, progress=None, siiu=True):
     progress = progress or (lambda stage, done=None, total=None: None)
     key = apikey(key)
     if not key:
@@ -636,6 +636,9 @@ def enrich(data, cod_rh, institution=None, model_year=None, add_records=False, k
             "not included (use --scienti full to add them)"
         ),
     }
+    for p in data["projects"]:  # project ids as external ids, as in works
+        if (p.get("scienti") or {}).get("id"):
+            p.setdefault("external_ids", []).append({"provenance": "scienti", "source": "scienti", "id": p["scienti"]["id"]})
     log(
         f"scienti ({inst} {my}): products {n_used}/{len(index)} matched (works {n_works}, other items {n_items}); "
         f"projects {n_proj}/{len(projects)}, events {n_ev}/{len(events)}, networks {n_net}/{len(networks)}; "
@@ -643,4 +646,8 @@ def enrich(data, cod_rh, institution=None, model_year=None, add_records=False, k
         f"section items {sum(added['sections'].values())}, projects {added['projects']}, "
         f"events {added['events']}, networks {added['networks']}"
     )
+    if siiu:
+        from . import siiu as siiu_match
+
+        siiu_match.enrich(data, cod_rh, my, inst, key, log=log, progress=progress)
     return True

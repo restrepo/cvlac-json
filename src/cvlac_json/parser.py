@@ -848,25 +848,37 @@ SCIENTI_STAGES = [
 ]
 
 
-def stages(html=None, scienti="auto", ror=True):
+def stages(html=None, scienti="auto", ror=True, siiu=True):
     """Names of the progress stages extract() reports, in order."""
     out = [] if html is not None else ["CvLAC page"]
     out.append("Parsing")
     if scienti != "off":
         out += SCIENTI_STAGES
+        if siiu:
+            out.append("SIIU projects")
     if ror:
         out.append("ROR")
     return [*out, "Finishing"]
 
 
 def extract(
-    cod_rh, html=None, scienti="auto", institution=None, model_year=None, apikey=None, ror=True, log=print, progress=None
+    cod_rh,
+    html=None,
+    scienti="auto",
+    institution=None,
+    model_year=None,
+    apikey=None,
+    ror=True,
+    log=print,
+    progress=None,
+    siiu=True,
 ):
     """Build the CvLAC JSON for COD_RH.
 
     html: the page's HTML (str) instead of downloading it. scienti: "auto" (Scienti ids of matching
     entries when an apis.colav.co key is available), "full" (also the Scienti records missing from
     the page) or "off". ror: look experience and thesis institutions up in the ROR API.
+    siiu: with Scienti on, also add the SIIU code (UdeA) of the projects whose title and year match.
     progress: optional callable progress(stage, done=None, total=None), called with the names from
     stages(); the command line passes a cvlac_json.progress.Progress bar.
     """
@@ -883,7 +895,15 @@ def extract(
     if scienti != "off":  # first, so works added from Scienti get affiliations too
         try:
             scienti_match.enrich(
-                data, cod, institution, model_year, add_records=scienti == "full", key=apikey, log=log, progress=progress
+                data,
+                cod,
+                institution,
+                model_year,
+                add_records=scienti == "full",
+                key=apikey,
+                log=log,
+                progress=progress,
+                siiu=siiu,
             )
         except RuntimeError as e:
             log(f"scienti: skipped ({e})")

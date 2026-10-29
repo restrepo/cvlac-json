@@ -34,6 +34,7 @@ cvlac-json 0000026549 --scienti off --ror off # solo la página pública, sin ot
 | `--scienti off` | No consulta Scienti. |
 | `--institution`, `--model-year` | Volcado de Scienti (`udea`, `univalle`, `uec`, `unaula`) y año del modelo. |
 | `--apikey CLAVE` | Clave de apis.colav.co para esta ejecución. |
+| `--siiu auto` / `off` | Con Scienti activo, agrega o no a los proyectos el código de SIIU (UdeA) del proyecto con el mismo título y un año compatible. |
 | `--ror auto` / `off` | Consulta o no el registro ROR. |
 | `--no-progress` | No muestra la barra de progreso. |
 
