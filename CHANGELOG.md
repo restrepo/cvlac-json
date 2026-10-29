@@ -4,6 +4,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y l
 
 ## [Sin publicar]
 
+## [0.4.0] - 2026-10-28
+
 ### Agregado
 - Código de SIIU (UdeA) en los proyectos: `projects[].siiu` y `projects[].external_ids` con `source: "siiu"`, cuando el título es igual y el año compatible; resumen en el objeto `siiu` y opción `--siiu auto|off` (`siiu=` en `extract()`). Los proyectos de SIIU se buscan con el documento del registro de autor de Scienti, que no se imprime ni se guarda.
 - `projects[].external_ids` también con el id de Scienti, como en las obras.
@@ -27,7 +29,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y l
 - Tesis dirigidas con título, director, codirectores, estudiantes, institución con ROR, estado y programa.
 - Identificadores Scienti por DOI o título (`--scienti auto|full|off`, `--apikey`).
 
-[Sin publicar]: https://github.com/restrepo/cvlac-json/compare/v0.3.0...HEAD
+[Sin publicar]: https://github.com/restrepo/cvlac-json/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/restrepo/cvlac-json/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/restrepo/cvlac-json/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/restrepo/cvlac-json/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/restrepo/cvlac-json/releases/tag/v0.1.0
