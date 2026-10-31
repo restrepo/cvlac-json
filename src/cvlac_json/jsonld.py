@@ -16,7 +16,7 @@ import copy
 import re
 from urllib.parse import quote
 
-VOCAB = "https://github.com/fedevergara/cvlac-json/blob/main/docs/cvlac_json_esquema.md#"
+VOCAB = "https://github.com/restrepo/cvlac-json/blob/main/docs/cvlac_json_esquema.md#"
 CVLAC_URL = "https://scienti.minciencias.gov.co/cvlac/visualizador/generarCurriculoCv.do?cod_rh="
 
 _SAFE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
