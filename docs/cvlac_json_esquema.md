@@ -14,6 +14,7 @@ El esquema se verificó contra cinco CV reales de profesores de la UdeA (2026-10
 cvlac-json COD_RH [-o salida.json] [--html pagina_guardada.html] [--save-html pagina.html]
            [--scienti auto|full|off] [--institution udea] [--model-year 2024]
            [--apikey CLAVE] [--siiu auto|off] [--ror auto|off]
+           [--format json|jsonld] [--base URL] [--no-progress]
 ```
 
 El JSON combina tres fuentes:
@@ -159,7 +160,7 @@ Incluye las secciones Artículos, Libros, Capítulos de libro, Textos en publica
 | `product_types[]` | array | `{name, source}` con el tipo más específico | "Publicado en revista especializada" |
 | `authors[]` | array | Autores en el orden de la página (ver abajo) | |
 | `authors_count` | integer | Número de autores listados. El CvLAC a menudo lista solo al dueño, así que puede ser menor que el real. | 1 |
-| `year_published` | integer o null | Año de publicación | 2017 |
+| `year_published` | integer o null | Año de publicación. En los formatos etiquetados (libros de divulgación, de formación…) se toma de "Fecha de presentación"; en los demás, de la cita (un año en el título, como "…al año 2050", no cuenta en los etiquetados). | 2017 |
 | `doi` | string o null | DOI como URL, en minúsculas. Se busca después de "DOI:", también escrito como enlace (`https://doi.org/10…`, `dx.doi.org`) o con texto antes; si no está ahí, en el resto de la cita y en sus enlaces. Se quitan la puntuación y la barra finales. Un DOI truncado en la página queda truncado (p. ej. `10.1111/1750-3841`, que es solo el prefijo de una revista). | `https://doi.org/10.9999/synthetic.2017.003` |
 | `external_ids[]` | array | `{provenance, source, id}`: `doi`, `isbn` y, si hubo coincidencia, `scienti` (`COD_RH-COD_PRODUCTO`) | `{"provenance": "scienti", "source": "scienti", "id": "0000000001-20912"}` |
 | `external_urls[]` | array | `{provenance, source, url}`: enlaces del ítem y el "Medio de verificación". No aparece en los cinco CV de prueba (ninguna obra tenía enlaces). | |
@@ -376,3 +377,36 @@ Si el registro de autor de Scienti no tiene documento, o el investigador no tien
 | Eventos | 16 | 53 |
 | Tesis dirigidas | 8 | 72 |
 | Obras con id Scienti | 32 de 36 | 182 de 182 |
+
+## 20. JSON-LD
+
+Con `--format jsonld` (o `cvlac_json.to_jsonld(data, base=None)`) se obtiene el mismo JSON con `@context`, `@id` y `@type`, listo para convertirlo a RDF. Ninguna clave cambia de nombre ni de valor.
+
+| Elemento | Valor |
+| --- | --- |
+| `@id` del perfil | `--base` seguido del COD_RH; sin `--base`, la URL de la página del CvLAC (`url`) |
+| `@type` del perfil | `schema:ProfilePage` y `CvlacProfile` |
+| `@id` de obras, proyectos, eventos e ítems de `sections` | IRI del perfil más un JSON Pointer (RFC 6901) a su lugar en el documento: `…#/works/0`, `…#/sections/Trabajos%20dirigidos~1tutor%C3%ADas/3` |
+| `@type` de los registros | `works[]`: `schema:CreativeWork`; `projects[]`: `schema:ResearchProject`; `events[]`: `schema:Event`. Los ítems de `sections` no llevan tipo. |
+| Vocabulario (`@vocab`) | `https://github.com/restrepo/cvlac-json/blob/main/docs/cvlac_json_esquema.md#`. Una clave sin término propio queda como ese prefijo más su nombre, y su significado es el de las tablas de este documento. |
+
+Claves con un término de schema.org o PROV:
+
+| Clave | Término |
+| --- | --- |
+| `cod_rh`, `id` | `schema:identifier` |
+| `url` | `schema:url` |
+| `name`, `full_name`, `title`, `profile.Nombre` | `schema:name` |
+| `summary` | `schema:abstract` |
+| `keywords` | `schema:keywords` |
+| `authors` | `schema:author`, como lista ordenada (`@list`): el orden de la cita se conserva |
+| `year_published` | `schema:datePublished` (`xsd:gYear`) |
+| `doi` | `schema:sameAs`, como IRI |
+| `retrieved` | `prov:generatedAtTime` (`xsd:dateTime`) |
+| `profile.Nacionalidad`, `profile.Sexo` | `schema:nationality`, `schema:gender` |
+
+- <a id="CvlacProfile"></a>`CvlacProfile` es el tipo del perfil completo que describe este documento.
+- Las etiquetas de `profile` con espacios o tildes ("Nombre en citaciones", "Categoría") reciben un término propio: el prefijo del vocabulario más la etiqueta codificada (`Nombre%20en%20citaciones`).
+- <a id="section"></a>`sections` es un mapa índice (`@container: @index`): en RDF cada ítem lleva la propiedad `section` con el título de su sección.
+- `counts` y `fields` quedan como literales JSON (`@type: @json`), porque sus claves son etiquetas abiertas de la página.
+- La conversión a RDF se puede comprobar con `pyld` (`pip install pyld`, luego `pyld.jsonld.to_rdf(doc)`). Las pruebas lo hacen si está instalado (`pip install -e ".[dev]"`).
