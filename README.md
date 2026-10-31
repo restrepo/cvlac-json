@@ -36,6 +36,8 @@ cvlac-json 0000026549 --scienti off --ror off # solo la página pública, sin ot
 | `--apikey CLAVE` | Clave de apis.colav.co para esta ejecución. |
 | `--siiu auto` / `off` | Con Scienti activo, agrega o no a los proyectos el código de SIIU (UdeA) del proyecto con el mismo título y un año compatible. |
 | `--ror auto` / `off` | Consulta o no el registro ROR. |
+| `--format json` / `jsonld` | Salida JSON (por defecto) o JSON-LD (ver más abajo). Sin `-o`, el archivo es `cvlac_COD_RH.json` o `cvlac_COD_RH.jsonld`. |
+| `--base URL` | Con `--format jsonld`, prefijo del IRI del perfil, al que se agrega el COD_RH. Por defecto, el IRI es la URL de la página del CvLAC. |
 | `--no-progress` | No muestra la barra de progreso. |
 
 Mientras trabaja, el comando muestra en la terminal una barra de progreso con la etapa actual (descarga, análisis, cada consulta a Scienti, ROR) y el tiempo transcurrido:
@@ -75,6 +77,7 @@ cvlac-json 0000026549 --format jsonld --base https://ejemplo.org/cvlac/ # @id = 
 - Ninguna clave cambia de nombre ni de valor; el contexto usa schema.org donde el significado es claro y el vocabulario de este esquema en lo demás.
 - Obras, proyectos, eventos e ítems de las demás secciones tienen un `@id` con un JSON Pointer a su lugar en el documento: `…/0000026549#/works/0`.
 - `authors` es una lista ordenada (el orden de la cita se conserva en RDF); `counts` y `fields` quedan como literales JSON.
+- El contexto completo, con la correspondencia de cada clave, está en la [sección 20 del esquema](docs/cvlac_json_esquema.md#20-json-ld).
 
 ## Esquema del JSON
 

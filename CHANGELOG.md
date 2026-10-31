@@ -11,6 +11,10 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y l
 - DOI de las obras: se reconoce también escrito como enlace (`DOI: https://doi.org/10…`, `dx.doi.org`) o con texto antes, y se busca en el resto de la cita y en sus enlaces si no está después de "DOI:". Se quitan la puntuación y la barra finales. En una muestra de 1.000 CvLAC, las obras con DOI pasan de 2.421 a 2.611.
 - Año de las obras en formatos etiquetados (libros de divulgación, de formación…): se toma de "Fecha de presentación" antes que del texto libre, que incluye el título (`Plan… al año 2050` daba 2050).
 
+### Cambiado
+- Documentación: las opciones `--format` y `--base` en el README y en el esquema, y una sección JSON-LD en el esquema (§20) con el contexto, los tipos y los `@id`.
+- CI y publicación usan `actions/checkout@v7`, `actions/setup-python@v7`, `actions/upload-artifact@v7` y `actions/download-artifact@v8`.
+
 ## [0.4.0] - 2026-10-28
 
 ### Agregado
