@@ -3,7 +3,7 @@ import datetime as dt
 import pytest
 
 from cvlac_json import extract, normalize_cod_rh
-from cvlac_json.parser import build
+from cvlac_json.parser import build, find_doi, items, work_from_item
 
 COD = "0000000001"
 
@@ -176,3 +176,38 @@ def test_split_name(prof, raw, first, last, by):
 
     out = split_name(raw, prof)
     assert (out["first_names"], out["last_names"], out["name_split_by"]) == (first, last, by)
+
+
+@pytest.mark.parametrize(
+    "texts, doi",
+    [
+        (["10.1111/rda.13599"], "10.1111/rda.13599"),
+        (["https://doi.org/10.1016/j.acci.2016.02.002"], "10.1016/j.acci.2016.02.002"),
+        (["Rev. Acad. Colomb. Cienc. Ex. Fis. Nahttp://dx.doi.org/10.18257/raccefyn.258"], "10.18257/raccefyn.258"),
+        (["10.1093/femsle/fnad098/"], "10.1093/femsle/fnad098"),
+        (["10.1590/S0120-41572010000100002."], "10.1590/s0120-41572010000100002"),
+        (["10.1016/0002-9149(83)90004-X"], "10.1016/0002-9149(83)90004-x"),
+        (["(10.1016/j.x.2020.01.001)"], "10.1016/j.x.2020.01.001"),
+        (["sin doi", "texto con 10.1007/s00134-020-06022-5 al final"], "10.1007/s00134-020-06022-5"),
+        (["", None, "http://example.org/x"], None),
+    ],
+)
+def test_find_doi(texts, doi):
+    # Cases taken from real CvLAC pages: URL forms, junk before the DOI, trailing punctuation.
+    assert find_doi(*texts) == doi
+
+
+def test_labeled_book_year_from_presentation_date():
+    # Labeled formats: the free text holds the title, which may name other years ('al año 2050').
+    frag = (
+        "<tr><td><li><b>Producción bibliográfica - Libro - Libros de divulgación y/o Compilación de divulgación </b>"
+        "</li></td></tr>"
+        "<tr><td><blockquote><i>Nombre del libro: </i>Plan prospectivo al año 2050 (Ley 1333 de 2009),&nbsp; "
+        "<i>Fecha de presentaci&oacute;n: </i>2024 -  Julio,&nbsp; <i>Isbn: </i>978-628-96104-0-6,&nbsp; "
+        "<i>Editorial: </i>Editorial de prueba,&nbsp;</blockquote></td></tr>"
+    )
+    ((hdr, endorsed, bq),) = items(frag)
+    owner = {"cod_rh": COD, "name": "ANA MARIA PEREZ GOMEZ", "citation_name": None}
+    w = work_from_item("Libros de divulgación", hdr, endorsed, bq, owner, 1)
+    assert w["title"] == "Plan prospectivo al año 2050 (Ley 1333 de 2009)"
+    assert w["year_published"] == 2024

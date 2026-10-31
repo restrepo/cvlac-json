@@ -544,6 +544,26 @@ def parse_thesis(it, raw, owner):
 
 
 # ---------------------------------------------------------------- bibliographic works -> ImpactU schema
+DOI_RE = re.compile(r"\b10\.\d{4,9}/[^\s<>\"{}|\\^`\[\]]+", re.I)  # same pattern as Yuku's cvlac_related_works
+
+
+def find_doi(*texts):
+    """First DOI found in texts, tried in order.
+
+    The CvLAC writes the DOI as a bare DOI, as a URL (https://doi.org/..., dx.doi.org) or after junk
+    ('Rev. Acad. ... Nahttp://dx.doi.org/10...'). Trailing punctuation and slashes are dropped; a closing
+    parenthesis is kept only when it is balanced, as in 10.1016/0002-9149(83)90004-X.
+    """
+    for s in texts:
+        for m in DOI_RE.finditer(s or ""):
+            d = m.group(0)
+            while d and (d[-1] in ".,;:/]}" or (d[-1] == ")" and d.count("(") < d.count(")"))):
+                d = d[:-1]
+            if re.fullmatch(r"10\.\d{4,9}/\S+", d):
+                return d.lower()
+    return None
+
+
 def split_authors(s):
     s = re.sub(r"Tipo:\s*[^,\n]*?(?=\n|$)", "", s)  # chapters repeat 'Tipo: ...' after each author
     return [a for a in (clean(x) for x in re.split(r",\s*\n?|\n", s)) if a and not a.lower().startswith("tipo")]
@@ -583,23 +603,25 @@ def work_from_item(sec, hdr, endorsed, bq, owner, n):
     country = clean(re.split(r"\.|\s(?:19|20)\d\d|ISBN|ISSN|,", mc.group(1))[0]) if mc else None
     country = country or f.get("Lugar de publicación")
     issn, isbn = g(r"ISSN:\s*([\dXx-]{8,9})"), g(r"ISBN:\s*([\dXx-]{10,17})") or f.get("Isbn")
-    doi = g(r"DOI:\s*(10\.\S+)")
+    m_doi = re.search(r"DOI:\s*(.*)", after, flags=re.I)
+    doi = find_doi(m_doi.group(1) if m_doi else "", flat, *(lk["url"] for lk in links(bq)))
     pub = g(r"ed:\s*([^<\n]*?)(?:\s{2,}|\s+v\.|\s+ISBN|\s*,\s*v\.|$)") or f.get("Editorial")
     vol = g(r"\bv\.\s*([\w-]+)")
     issue = g(r"fasc\.\s*(?!p\.)([\w/-]+)")
     vol, issue = (None if (x or "").upper() in ("N/A", "NA", "") else x for x in (vol, issue))
     pages = re.search(r"\bp\.\s*([\w]+)\s*-\s*([\w]+)", after)
     npages = g(r"pags\.\s*(\d+)")
-    year = None
-    m = (
-        re.search(r",\s*((?:19|20)\d\d)\s*,?", after)
-        or re.search(r"En:[^.]*?\s((?:19|20)\d\d)\b", after)
-        or re.search(r"\b((?:19|20)\d\d)\b", after)
-    )
+    # Labeled formats carry the date in its own field; their free text holds the title ('... al año 2050').
+    year = year_of(f.get("Fecha de presentación"))
+    m = None
+    if not year:
+        m = (
+            re.search(r",\s*((?:19|20)\d\d)\s*,?", after)
+            or re.search(r"En:[^.]*?\s((?:19|20)\d\d)\b", after)
+            or re.search(r"\b((?:19|20)\d\d)\b", after)
+        )
     if m:
         year = int(m.group(1))
-    if not year and f.get("Fecha de presentación"):
-        year = year_of(f["Fecha de presentación"])
     source_name = None
     if hier[1:2] == ["Artículo"] or sec.lower() == "artículos":
         source_name = g(r"(?:<br>|\n)?\s*([^\n]+?)\s+ISSN:", t[t.find('"', t.find('"') + 1) + 1 :] if title else t)
@@ -632,7 +654,7 @@ def work_from_item(sec, hdr, endorsed, bq, owner, n):
         )
     ext = []
     if doi:
-        ext.append({"provenance": "cvlac", "source": "doi", "id": doi.lower()})
+        ext.append({"provenance": "cvlac", "source": "doi", "id": doi})
     if isbn:
         ext.append({"provenance": "cvlac", "source": "isbn", "id": isbn})
     src_ids = (
@@ -653,7 +675,7 @@ def work_from_item(sec, hdr, endorsed, bq, owner, n):
         "authors": authors_out,
         "authors_count": len(authors_out),
         "year_published": year,
-        "doi": f"https://doi.org/{doi.lower()}" if doi and re.match(r"10\.\d{4,9}/\S+", doi) else None,
+        "doi": f"https://doi.org/{doi}" if doi else None,
         "external_ids": ext,
         "external_urls": [{"provenance": "cvlac", "source": "cvlac", "url": lk["url"]} for lk in links(bq)]
         + (
