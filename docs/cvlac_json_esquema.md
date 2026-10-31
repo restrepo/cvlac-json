@@ -160,7 +160,7 @@ Incluye las secciones Artículos, Libros, Capítulos de libro, Textos en publica
 | `authors[]` | array | Autores en el orden de la página (ver abajo) | |
 | `authors_count` | integer | Número de autores listados. El CvLAC a menudo lista solo al dueño, así que puede ser menor que el real. | 1 |
 | `year_published` | integer o null | Año de publicación | 2017 |
-| `doi` | string o null | DOI como URL. Se toma tal como lo reporta el CvLAC: hay DOI truncados (p. ej. `10.1111/1750-3841`, que es solo el prefijo de una revista). | `https://doi.org/10.9999/synthetic.2017.003` |
+| `doi` | string o null | DOI como URL, en minúsculas. Se busca después de "DOI:", también escrito como enlace (`https://doi.org/10…`, `dx.doi.org`) o con texto antes; si no está ahí, en el resto de la cita y en sus enlaces. Se quitan la puntuación y la barra finales. Un DOI truncado en la página queda truncado (p. ej. `10.1111/1750-3841`, que es solo el prefijo de una revista). | `https://doi.org/10.9999/synthetic.2017.003` |
 | `external_ids[]` | array | `{provenance, source, id}`: `doi`, `isbn` y, si hubo coincidencia, `scienti` (`COD_RH-COD_PRODUCTO`) | `{"provenance": "scienti", "source": "scienti", "id": "0000000001-20912"}` |
 | `external_urls[]` | array | `{provenance, source, url}`: enlaces del ítem y el "Medio de verificación". No aparece en los cinco CV de prueba (ninguna obra tenía enlaces). | |
 | `source` | object | Revista o libro: `name`, `external_ids[]` (`issn` o `isbn`), `publisher` (`name`, `country`). En artículos, la revista con ISSN; en capítulos, el libro con ISBN; en libros no hay `name`. | `{"name": "REVISTA DE PRUEBAS SINTETICAS", "external_ids": [{"source": "issn", "id": "1234-5679"}], …}` |
