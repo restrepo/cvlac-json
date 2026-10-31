@@ -63,6 +63,19 @@ data = extract("0000026549", html=html, ror=False)
 data = extract("0000026549", progress=lambda etapa, hechas=None, total=None: print(etapa))  # página guardada
 ```
 
+## JSON-LD
+
+`--format jsonld` (o `to_jsonld(data)` en Python) entrega el mismo documento con `@context`, `@id` y `@type`, listo para convertirlo a RDF:
+
+```bash
+cvlac-json 0000026549 --format jsonld                                   # @id = URL de la página del CvLAC
+cvlac-json 0000026549 --format jsonld --base https://ejemplo.org/cvlac/ # @id = https://ejemplo.org/cvlac/0000026549
+```
+
+- Ninguna clave cambia de nombre ni de valor; el contexto usa schema.org donde el significado es claro y el vocabulario de este esquema en lo demás.
+- Obras, proyectos, eventos e ítems de las demás secciones tienen un `@id` con un JSON Pointer a su lugar en el documento: `…/0000026549#/works/0`.
+- `authors` es una lista ordenada (el orden de la cita se conserva en RDF); `counts` y `fields` quedan como literales JSON.
+
 ## Esquema del JSON
 
 El esquema completo, campo por campo, está en [docs/cvlac_json_esquema.md](docs/cvlac_json_esquema.md) y en versión navegable en [docs/cvlac_json_esquema.html](docs/cvlac_json_esquema.html).

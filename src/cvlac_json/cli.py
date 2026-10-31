@@ -5,6 +5,7 @@ import json
 import sys
 
 from . import __version__
+from .jsonld import to_jsonld
 from .parser import extract, fetch, normalize_cod_rh, stages
 from .progress import Progress
 
@@ -39,6 +40,11 @@ def build_parser():
         help="with Scienti on, add the SIIU code of projects with the same title and a compatible year (default auto)",
     )
     ap.add_argument("--ror", choices=["auto", "off"], default="auto", help="look institutions up in the ROR API (default auto)")
+    ap.add_argument("--format", choices=["json", "jsonld"], default="json", help="output JSON or JSON-LD (default json)")
+    ap.add_argument(
+        "--base",
+        help="with --format jsonld: IRI prefix for the profile, followed by the COD_RH (default: the URL of the CvLAC page)",
+    )
     ap.add_argument(
         "--no-progress",
         action="store_true",
@@ -80,8 +86,9 @@ def main(argv=None):
             log=bar.write,
             progress=bar,
         )
-    out = a.output or f"cvlac_{cod}.json"
-    text = json.dumps(data, ensure_ascii=False, indent=1)
+    out = a.output or f"cvlac_{cod}.{a.format}"
+    doc = to_jsonld(data, base=a.base) if a.format == "jsonld" else data
+    text = json.dumps(doc, ensure_ascii=False, indent=1)
     if out == "-":
         sys.stdout.write(text + "\n")
     else:

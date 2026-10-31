@@ -7,6 +7,7 @@
 
 from importlib.metadata import PackageNotFoundError, version
 
+from .jsonld import to_jsonld
 from .parser import build, extract, fetch, normalize_cod_rh
 
 try:
@@ -14,4 +15,4 @@ try:
 except PackageNotFoundError:  # running from a source tree without installing
     __version__ = "0.0.0"
 
-__all__ = ["__version__", "build", "extract", "fetch", "normalize_cod_rh"]
+__all__ = ["__version__", "build", "extract", "fetch", "normalize_cod_rh", "to_jsonld"]
