@@ -4,6 +4,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y l
 
 ## [Sin publicar]
 
+## [0.5.0] - 2026-10-31
+
 ### Agregado
 - Salida JSON-LD: `to_jsonld(data, base=None)` y la opción `--format jsonld` (con `--base` para el prefijo del IRI). Es el mismo documento con `@context`, `@id` y `@type`; obras, proyectos, eventos e ítems de sección son nodos con un JSON Pointer como `@id`. `pyld` se agrega a las dependencias de desarrollo para probar la conversión a RDF.
 
@@ -40,7 +42,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y l
 - Tesis dirigidas con título, director, codirectores, estudiantes, institución con ROR, estado y programa.
 - Identificadores Scienti por DOI o título (`--scienti auto|full|off`, `--apikey`).
 
-[Sin publicar]: https://github.com/restrepo/cvlac-json/compare/v0.4.0...HEAD
+[Sin publicar]: https://github.com/restrepo/cvlac-json/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/restrepo/cvlac-json/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/restrepo/cvlac-json/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/restrepo/cvlac-json/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/restrepo/cvlac-json/compare/v0.1.0...v0.2.0
