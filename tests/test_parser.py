@@ -211,3 +211,40 @@ def test_labeled_book_year_from_presentation_date():
     w = work_from_item("Libros de divulgación", hdr, endorsed, bq, owner, 1)
     assert w["title"] == "Plan prospectivo al año 2050 (Ley 1333 de 2009)"
     assert w["year_published"] == 2024
+
+
+def test_section_coauthors_and_contract(data):
+    (c,) = data["sections"]["Consultorías"]
+    assert c["title"] == "Diagnóstico sintético de calidad de datos, para pruebas"
+    assert [(a["full_name"], a["id"]) for a in c["authors"]] == [
+        ("ANA MARIA PEREZ GOMEZ", data["cod_rh"]),
+        ("LUIS FERNANDO TORRES VEGA", None),
+    ]
+    assert c["country"] == "Colombia" and c["year"] == 2020
+    assert c["duration"] == {"value": 6, "unit": "meses"}
+    assert c["identifiers"] == [{"source": "contract/registration", "id": "CT-0042 de 2020"}]
+    assert c["fields"]["contrato/registro"] == "CT-0042 de 2020"  # no longer runs into '. En: Colombia, ,2020'
+
+
+def test_section_course(data):
+    (c,) = data["sections"]["Cursos de corta duración"]
+    assert c["title"] == "Curso sintético de análisis de datos"
+    assert c["purpose"] == "Formar analistas de prueba"
+    assert c["institution"] == "UNIVERSIDAD DE ANTIOQUIA" and c["role"] == "Docente"
+    assert c["duration"] == {"value": 16, "unit": "semanas"}
+
+
+def test_section_sequence_links_and_accession(data):
+    (s,) = data["sections"]["Nueva secuencia genética"]
+    assert s["title"] == "Organismo sintético gen X, partial cds"
+    assert s["date"] == "2016-06" and s["city"] == "MEDELLÍN" and s["database"] == "GenBank"
+    assert [x["url"] for x in s["links"]] == ["https://www.ncbi.nlm.nih.gov/nuccore/MG000001.1"]
+    assert {"source": "accession", "id": "MG000001"} in s["identifiers"]
+
+
+def test_section_patent(data):
+    (p,) = data["sections"]["Patentes"]
+    assert p["title"] == "MÉTODO SINTÉTICO DE PRUEBA"
+    assert p["date"] == "2020-12-07" and p["country"] == "Colombia"
+    assert p["holder"] == "UNIVERSIDAD DE ANTIOQUIA"
+    assert p["identifiers"] == [{"source": "patent", "id": "NC2020/0000001"}, {"source": "gazette", "id": "39514"}]

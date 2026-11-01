@@ -227,19 +227,60 @@ El CvLAC no enlaza proyectos con productos: no presente un proyecto como fuente 
 
 ## 13. `sections`: demás secciones
 
-Objeto cuyas claves son los títulos de sección del CvLAC y cuyos valores son listas de ítems genéricos. Secciones vistas en los cinco CV: Trabajos dirigidos/tutorías, Jurado en comités de evaluación, Participación en comités de evaluación, Par evaluador, Cursos de corta duración, Consultorías, Informes de investigación, Informes técnicos, Demás trabajos, Fortalecimiento o solución de asuntos de interés social, Redes de conocimiento especializado, Estancias posdoctorales, Patentes, Secretos empresariales, Prototipos, Planta piloto, Softwares, Signos distintivos, Nuevos registros científicos, Innovación de proceso o procedimiento.
+Objeto cuyas claves son los títulos de sección del CvLAC y cuyos valores son listas de ítems. En los 4.596 CvLAC de la UdeA aparecen 49 secciones, entre ellas: Trabajos dirigidos/tutorías, Jurado en comités de evaluación, Par evaluador, Cursos de corta duración, Participación en comités de evaluación, Informes de investigación, Demás trabajos, Consultorías, Nueva secuencia genética, Ediciones/revisiones, Informes técnicos, Redes de conocimiento especializado, Softwares, Prototipos, Producciones de contenido digital, Patentes, Boletines, Normas y Regulaciones, Secretos empresariales, Signos distintivos, Empresas de base tecnológica y Concepto técnico.
+
+Cada ítem guarda el texto y, además, los campos estructurados que se puedan leer de él (desde 0.6.0). Las tesis dirigidas tienen sus propios campos (§14).
 
 | Campo | Tipo | Descripción |
 | --- | --- | --- |
-| `type` | string | Tipo de producto del CvLAC, niveles separados por " - " (p. ej. "Producción técnica - Cursos de corta duración dictados - Extensión extracurricular"). Falta si toda la sección lo tiene vacío. |
+| `type` | string | Tipo de producto del CvLAC, niveles separados por " - " (p. ej. "Producción técnica - Cursos de corta duración dictados - Extensión extracurricular"). En Asesorías y Secretos empresariales la página pone ahí el nombre del producto. Falta si toda la sección lo tiene vacío. |
 | `endorsed` | boolean | Marca de verificación. |
+| `title` | string o null | Nombre del producto: el texto entre las personas y el primer dato rotulado, o el valor de "Nombre del producto", "Titulo", "Nombre de la red", "Nombre del evento"… |
+| `authors[]` | array | Personas escritas antes del título, en orden. La página pone cada una en su propia línea, terminada en coma, y así se separan del título aunque este tenga comas. Cada una es `{full_name, id, external_ids}`; el dueño del CV lleva su COD_RH en `id` y en `external_ids`, las demás `id: null`. En Jurado en comités de evaluación son los jurados (`type: "jury"`) y los orientados (`type: "student"`). |
+| `country`, `city` | string | País ("En: Colombia") y ciudad ("En: MEDELLÍN", "Ciudad: …"). |
+| `place` | string | Lugar de realización (Talleres creativos). |
+| `institution` | string | Institución del ítem: la de "Institución", la solicitante de un concepto técnico, la que emite un registro, la del curso o el comité ("en: …"). |
+| `publisher` | string | Editorial o entidad tras el año en Ediciones/revisiones. |
+| `venue` | string | Revista o editorial evaluada (Par evaluador). |
+| `program` | string | Programa académico del trabajo evaluado (Jurado). |
+| `date` | string | Fecha ISO: `AAAA-MM-DD`, `AAAA-MM` o `AAAA`, de "Fecha de presentación", "Fecha de inicio", "Creada el", "En: Junio - 2016", la fecha de la patente… |
+| `duration` | object | `{value, unit}` con unidad `meses`, `semanas`, `horas` o `días`; no aparece si vale 0. |
+| `pages` | integer | "p.155", si es mayor que 0. |
+| `role` | string | "participación: Docente" (cursos). |
+| `purpose` | string | "Finalidad". |
+| `holder` | string | Titular: solicitante de la patente, titular del signo distintivo o del secreto empresarial. |
+| `database` | string | Base de datos de una secuencia o un registro científico (GenBank, ENA, Index Fungorum…). |
+| `platform`, `environment` | string | Plataforma y ambiente de un software. |
+| `identifiers[]` | array | `{source, id}`. `source`: `contract/registration` (contrato/registro), `patent`, `gazette` (Gaceta Industrial), `registration` (signos, INVIMA), `nit`, `concept number`, `trade secret`, `copyright registration` (Dirección Nacional de Derechos de Autor), `accession` (palabras clave con forma de número de acceso, en secuencias), `doi`, `isbn`, `issn`. |
+| `links[]` | array | `{url, label}`: enlaces `<a>` del ítem y URL escritas en el texto (medio de verificación, "disponible en", plataforma, página web). Las que empiezan por `www.` reciben `http://`. |
 | `text` | string | Texto completo del ítem. |
-| `fields` | object o null | Pares etiqueta → valor (`Finalidad`, `Institución`, `Nombre comercial`, `contrato/registro`…). |
+| `fields` | object o null | Pares etiqueta → valor (`Finalidad`, `Institución`, `Nombre comercial`, `contrato/registro`…). Los valores que antes seguían hasta el final del ítem (`"574273, . En: Colombia, ,2018, 0 meses p"`) se cortan donde empieza la parte sin rótulo; los vacíos o "n/a" se quitan. |
 | `keywords[]`, `areas[]`, `sectors[]` | array de string | Palabras, áreas y sectores del ítem. |
-| `links[]` | array | Enlaces del ítem; no aparece en los cinco CV de prueba. |
 | `year` | integer o null | Año detectado en el texto. |
 | `scienti` | object o null | Coincidencia con un producto o red Scienti (§17). Los pares evaluadores no son productos Scienti y no tienen id. |
 | `origin` | string | Solo con `--scienti full`. |
+
+Como en todo el JSON, un campo aparece en todos los ítems de una sección si tiene valor en alguno, y no aparece si está vacío en todos (§2).
+
+Ejemplo (Consultorías):
+
+```json
+{
+  "type": "Producción técnica - Consultoría Científico Tecnológica e Informe Técnico - Servicios de proyectos de IDI",
+  "endorsed": false,
+  "title": "Componente de investigación en proyecto Implementación de estrategias de innovación…",
+  "authors": [
+    {"full_name": "BETSELENE MURCIA ORDONEZ", "id": "0000157155", "external_ids": [{"provenance": "cvlac", "source": "scienti", "id": "0000157155"}]},
+    {"full_name": "LUIS CARLOS CHAVES MORENO", "id": null, "external_ids": []}
+  ],
+  "country": "Colombia",
+  "duration": {"value": 12, "unit": "meses"},
+  "identifiers": [{"source": "contract/registration", "id": "003 de 2017"}],
+  "text": "BETSELENE MURCIA ORDONEZ, LUIS CARLOS CHAVES MORENO, Componente de investigación…, Nombre comercial: , contrato/registro: 003 de 2017, . En: Colombia, ,2017, 12 meses p.",
+  "fields": {"contrato/registro": "003 de 2017"},
+  "year": 2017
+}
+```
 
 ## 14. Tesis dirigidas: `sections["Trabajos dirigidos/tutorías"][]`
 

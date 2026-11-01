@@ -4,6 +4,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y l
 
 ## [Sin publicar]
 
+### Agregado
+- Campos estructurados en los ítems de las demás secciones (`sections`, §13 del esquema): `title`, `authors[]` (el dueño con su COD_RH, los coautores por nombre; jurados y orientados en Jurado en comités de evaluación), `country`, `city`, `institution`, `publisher`, `venue`, `program`, `date` (ISO), `duration`, `pages`, `role`, `purpose`, `holder`, `database`, `platform`, `environment`, `identifiers[]` (contrato/registro, patente, gaceta, NIT, registro, número de concepto, secreto empresarial, derechos de autor, número de acceso, DOI, ISBN, ISSN) y `links[]` con las URL escritas en el texto. Los coautores se separan del título por la línea de la página en que va cada persona. En los 4.596 CvLAC de la UdeA hay unos 39.000 coautores y 6.700 ítems con URL en estas secciones, antes sin separar.
+
+### Corregido
+- Valores de `fields` que seguían hasta el final del ítem: `contrato/registro`, `Finalidad`, `Vía de solicitud`, `Institución solicitante` y `Medio de divulgación` se cortan donde empieza la parte sin rótulo (". En: Colombia, ,2017, 0 meses p."); los vacíos o "n/a" se quitan. En Signos distintivos ya no queda el año como etiqueta.
+
 ## [0.5.0] - 2026-10-31
 
 ### Agregado
