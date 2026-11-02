@@ -4,6 +4,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y l
 
 ## [Sin publicar]
 
+## [0.6.0] - 2026-11-01
+
+### Agregado
+- Campos estructurados en los ítems de las demás secciones (`sections`, §13 del esquema): `title`, `authors[]` (el dueño con su COD_RH, los coautores por nombre; jurados y orientados en Jurado en comités de evaluación), `country`, `city`, `institution`, `publisher`, `venue`, `program`, `date` (ISO), `duration`, `pages`, `role`, `purpose`, `holder`, `database`, `platform`, `environment`, `identifiers[]` (contrato/registro, patente, gaceta, NIT, registro, número de concepto, secreto empresarial, derechos de autor, número de acceso, DOI, ISBN, ISSN) y `links[]` con las URL escritas en el texto. Los coautores se separan del título por la línea de la página en que va cada persona. En los 4.596 CvLAC de la UdeA hay unos 39.000 coautores y 6.700 ítems con URL en estas secciones, antes sin separar.
+
+### Corregido
+- Valores de `fields` que seguían hasta el final del ítem: `contrato/registro`, `Finalidad`, `Vía de solicitud`, `Institución solicitante` y `Medio de divulgación` se cortan donde empieza la parte sin rótulo (". En: Colombia, ,2017, 0 meses p."); los vacíos o "n/a" se quitan. En Signos distintivos ya no queda el año como etiqueta.
+
 ## [0.5.0] - 2026-10-31
 
 ### Agregado
@@ -42,7 +50,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y l
 - Tesis dirigidas con título, director, codirectores, estudiantes, institución con ROR, estado y programa.
 - Identificadores Scienti por DOI o título (`--scienti auto|full|off`, `--apikey`).
 
-[Sin publicar]: https://github.com/restrepo/cvlac-json/compare/v0.5.0...HEAD
+[Sin publicar]: https://github.com/restrepo/cvlac-json/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/restrepo/cvlac-json/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/restrepo/cvlac-json/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/restrepo/cvlac-json/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/restrepo/cvlac-json/compare/v0.2.0...v0.3.0

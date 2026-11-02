@@ -4,7 +4,7 @@
 [![PyPI](https://img.shields.io/pypi/v/cvlac-json.svg)](https://pypi.org/project/cvlac-json/)
 [![Python](https://img.shields.io/pypi/pyversions/cvlac-json.svg)](https://pypi.org/project/cvlac-json/)
 
-Convierte la página pública del **CvLAC** de un investigador (Minciencias, Colombia) en un único documento JSON: perfil, formación, experiencia, producción bibliográfica en el esquema de obras de [ImpactU](https://impactu.colav.co), proyectos, eventos, tesis dirigidas y todas las demás secciones.
+Convierte la página pública del **CvLAC** de un investigador (Minciencias, Colombia) en un único documento JSON: perfil, formación, experiencia, producción bibliográfica en el esquema de obras de [ImpactU](https://impactu.colav.co), proyectos, eventos, tesis dirigidas y todas las demás secciones, con autores, título, lugar, fechas, identificadores y enlaces de cada ítem.
 
 - Sin dependencias: solo la biblioteca estándar de Python (3.10 o superior).
 - Agrega los **identificadores ROR** de las instituciones de la experiencia y de las tesis.

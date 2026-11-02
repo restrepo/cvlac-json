@@ -782,6 +782,12 @@ def build(page, cod_rh):
                 out["sections"][title] = [
                     parse_thesis(it, raw, owner) for it, raw in zip(out["sections"][title], raw_items, strict=False)
                 ]
+        else:
+            from .other_sections import structure
+
+            bqs = [bq for _, _, bq in items(dict(secs)[title])]
+            if len(bqs) == len(out["sections"][title]):
+                out["sections"][title] = [structure(it, bq, owner) for it, bq in zip(out["sections"][title], bqs, strict=True)]
     for title, frag in secs:
         its = items(frag)
         if title.lower() in BIBLIO or any((h or "").startswith("Producción bibliográfica") for h, _, _ in its):
