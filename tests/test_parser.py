@@ -343,4 +343,9 @@ def test_owner_added_or_found_by_variant():
     luis, owner = data["events"][0]["participants"]
     assert luis["id"] is None and luis["affiliations"] == [] and (owner["name"], owner["id"]) == ("Ana María Pérez Gómez", COD)
     assert data["events"][1]["participants"][0]["id"] == COD
-    assert data["counts"] == {"owner_by_name_variant": 1, "owner_added": 3, "product_hash_repeated": 0}
+    assert data["counts"] == {
+        "owner_by_name_variant": 1,
+        "owner_added": 3,
+        "product_hash_repeated": 0,
+        "product_hash_from_text": 0,
+    }

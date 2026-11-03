@@ -81,7 +81,7 @@ cvlac-json 0000026549 --format jsonld --base https://ejemplo.org/cvlac/ # @id = 
 
 ## Identificador de producto (`product_hash`)
 
-Cada obra, proyecto, patente y demás producto lleva, en la entrada del dueño en `authors[]`, un `product_hash`: el SHA-1 de `título|COD_RH|tipo|año`, con el título en minúsculas, sin tildes y solo con letras y dígitos, y el tipo `work`, `project`, `patent` u `other`. [gruplac-json](https://github.com/restrepo/gruplac-json) calcula el mismo valor para cada integrante autor de un producto del GrupLAC, así que el hash une un producto del CvLAC con el del GrupLAC de su grupo sin depender de mayúsculas, tildes, espacios ni puntuación. Es único en cada CV: si dos registros dan la misma clave, el segundo lleva `|2` al final, el tercero `|3`…
+Cada obra, proyecto, patente y demás producto lleva, en la entrada del dueño en `authors[]`, un `product_hash`: el SHA-1 de `título|COD_RH|tipo|año`, con el título en minúsculas, sin tildes y solo con letras y dígitos, y el tipo `work`, `project`, `patent` u `other`. Un ítem sin título, como una revisión de Par evaluador, usa su texto en la página (`text`) como título. [gruplac-json](https://github.com/restrepo/gruplac-json) calcula el mismo valor para cada integrante autor de un producto del GrupLAC, así que el hash une un producto del CvLAC con el del GrupLAC de su grupo sin depender de mayúsculas, tildes, espacios ni puntuación. Es único en cada CV: si dos registros dan la misma clave, el segundo lleva `|2` al final, el tercero `|3`…
 
 ```python
 from cvlac_json import product_hash

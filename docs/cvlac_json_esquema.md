@@ -369,6 +369,7 @@ Objeto de conteos (enteros):
 | `events_with_affiliation` | Eventos con al menos una afiliación del dueño en `participants`. |
 | `owner_by_name_variant`, `owner_added` | Registros en que el dueño se reconoció por una forma abreviada de su nombre, o se agregó porque no estaba en la lista (§10). |
 | `product_hash_repeated` | Registros cuya clave de `product_hash` ya tenía otro registro del CV y llevan un número de repetición (§21). |
+| `product_hash_from_text` | Registros sin título cuyo `product_hash` se calculó con su texto (§21). |
 | `products_with_affiliation` | Patentes y demás productos (sin las tesis) con al menos una afiliación del dueño. |
 | `works_only_in_scienti`, `section_items_only_in_scienti`, … | Solo con `--scienti full`. |
 
@@ -509,14 +510,16 @@ Cada obra, proyecto, patente y demás producto lleva, en la entrada del dueño e
 
 | Parte | Regla | Ejemplo |
 | --- | --- | --- |
-| título | En minúsculas, sin tildes ni otras marcas (Unicode NFKD y luego solo ASCII: "Física" → "fisica", la letra matemática "𝐽" → "j"), y solo con las letras `a`–`z` y los dígitos `0`–`9`: los espacios y la puntuación no cuentan. Un título vacío da `""`. | "Bleomicina: Una revisión" → `bleomicinaunarevision` |
+| título | En minúsculas, sin tildes ni otras marcas (Unicode NFKD y luego solo ASCII: "Física" → "fisica", la letra matemática "𝐽" → "j"), y solo con las letras `a`–`z` y los dígitos `0`–`9`: los espacios y la puntuación no cuentan. Un ítem sin título (sin letras ni dígitos en `title`, como las revisiones de Par evaluador) usa en su lugar su `text` (en las obras, `cvlac.text`), el texto del ítem en la página. | "Bleomicina: Una revisión" → `bleomicinaunarevision` |
 | COD_RH | El de la persona, con 10 dígitos. | `0000707619` |
 | tipo | `work` (producción bibliográfica, `works`), `project` (`projects`), `patent` (`patents`) u `other` (cualquier sección de `other_products`). Los eventos no tienen `product_hash`. | `work` |
 | año | Obras: `year_published`. Proyectos: el año de `start`. Patentes y demás productos: `year`, o el año de `date`. Vacío si no hay. | `2024` |
 
 Ejemplo: "Singlet Dirac dark matter streamlined", de `0000707619`, publicado en 2024, tiene la clave `singletdiracdarkmatterstreamlined|0000707619|work|2024` y el `product_hash` `efc8d0bb2fa5…` (SHA-1 de la clave en ASCII).
 
-**Único en el CV.** Si varios registros de la persona dan la misma clave (el mismo producto escrito dos veces, un curso dictado dos veces el mismo año, o ítems sin título como las revisiones de Par evaluador del mismo año), el primero conserva la clave y el n-ésimo, en el orden de la página, la lleva con `|n` al final (`…|work|2024|2`). `counts.product_hash_repeated` cuenta esos registros. Así no hay dos registros con el mismo `product_hash` en un CV. El primero es el que otra fuente reproduce; uno repetido coincide solo si la otra fuente lista las mismas repeticiones en el mismo orden.
+**Ítems sin título.** Una revisión de Par evaluador no tiene título; su `text` es, por ejemplo, "Ámbito: Internacional Par evaluador de: Material para publicación científica Revista: REVISTA DE BIOLOGIA TROPICAL, 2020, Julio", que da la clave `ambitointernacionalparevaluadordematerialparapublicacioncientificarevistarevistadebiologiatropical2020julio|0000000930|other|2020`. Así el ámbito, lo revisado, la revista o institución y el mes distinguen las revisiones de un mismo año, que antes solo se diferenciaban por `|n`. En los 4.596 CvLAC de la UdeA (2026-11-03) las repeticiones de ítems sin título bajan de 12.139 a 2.379; las que quedan tienen el mismo texto en la página. `counts.product_hash_from_text` cuenta los registros con hash calculado del texto. El texto depende de cómo escribe la página los rótulos y los meses, así que un cambio de rótulo en el CvLAC cambia esos hashes; el GrupLAC no tiene sección Par evaluador, así que no se pierde ninguna coincidencia.
+
+**Único en el CV.** Si varios registros de la persona dan la misma clave (el mismo producto escrito dos veces, un curso dictado dos veces el mismo año, o ítems sin título con el mismo texto), el primero conserva la clave y el n-ésimo, en el orden de la página, la lleva con `|n` al final (`…|work|2024|2`). `counts.product_hash_repeated` cuenta esos registros. Así no hay dos registros con el mismo `product_hash` en un CV. El primero es el que otra fuente reproduce; uno repetido coincide solo si la otra fuente lista las mismas repeticiones en el mismo orden.
 
 **Dónde va.** En la entrada del dueño en `authors[]` (la que tiene su COD_RH en `id`); las demás personas tienen `product_hash: null`. En un GrupLAC cada producto lista a todos los integrantes que lo firmaron, y cada uno lleva el hash calculado con su propio COD_RH: un artículo de dos integrantes tiene dos `product_hash`, uno igual al del CV de cada uno.
 
