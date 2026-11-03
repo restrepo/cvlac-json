@@ -78,3 +78,26 @@ def test_reproducible_from_a_gruplac_record():
     }
     member = gruplac_work["authors"][0]
     assert product_hash(gruplac_work["title"], member["id"], "work", gruplac_work["year_published"]) == cv
+
+
+def test_untitled_items_are_hashed_with_their_text():
+    """Par evaluador reviews have no title: their text (scope, what was reviewed, journal or institution, year, month)
+    takes its place, so reviews of one year get different hashes instead of |n numbers."""
+    from cvlac_json.parser import add_product_hashes
+
+    cod = "0000000002"
+    owner = {"full_name": "JUAN PABLO EJEMPLO PRUEBA", "id": cod}
+
+    def review(venue, month):
+        text = f"Ámbito: Internacional Par evaluador de: Material para publicación científica Revista: {venue}, 2020, {month}"
+        return {"authors": [dict(owner)], "venue": venue, "text": text, "year": 2020}
+
+    revs = [review("REVISTA UNO", "Julio"), review("REVISTA DOS", "Julio"), review("REVISTA UNO", "Julio")]
+    data = {"cod_rh": cod, "works": [], "projects": [], "patents": [], "other_products": {"Par evaluador": revs}}
+    add_product_hashes(data)
+    h = [r["authors"][0]["product_hash"] for r in revs]
+    assert h[0] == product_hash(revs[0]["text"], cod, "other", 2020)
+    assert h[1] == product_hash(revs[1]["text"], cod, "other", 2020)
+    assert h[2] == product_hash(revs[0]["text"], cod, "other", 2020, n=2)  # the same review entered twice
+    assert data["counts"]["product_hash_repeated"] == 1 and data["counts"]["product_hash_from_text"] == 3
+    assert hash_key(revs[0]["text"], cod, "other", 2020).startswith("ambitointernacionalparevaluadorde")

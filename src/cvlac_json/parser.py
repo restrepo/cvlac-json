@@ -931,20 +931,34 @@ def record_year(rec, kind):
     return int(y) if str(y or "").isdigit() else None
 
 
+def record_title(rec):
+    """The title that goes into the product hash: the item's title or, when it has no letter or digit (untitled items
+    such as Par evaluador reviews), the item's text as the page writes it."""
+    from .product_hash import title_key
+
+    t = rec.get("title")
+    if title_key(t):
+        return t
+    return rec.get("text") or (rec.get("cvlac") or {}).get("text") or t
+
+
 def add_product_hashes(data):
     """`product_hash` on the owner's author entry of every work, project, patent and other product (product_hash.py),
-    unique in the CV, and counts.product_hash_repeated: records that needed an occurrence number (n > 1)."""
+    unique in the CV; counts.product_hash_repeated: records that needed an occurrence number (n > 1), and
+    counts.product_hash_from_text: untitled records hashed with their text."""
     from .product_hash import hash_key, product_hashes
 
     cod = data["cod_rh"]
     recs = [("work", r) for r in data.get("works") or []] + [("project", r) for r in data.get("projects") or []]
     recs += [("patent" if title == PATENTS else "other", r) for title, its in product_lists(data) for r in its]
-    keys = [(rec.get("title"), kind, record_year(rec, kind)) for kind, rec in recs]
+    keys = [(record_title(rec), kind, record_year(rec, kind)) for kind, rec in recs]
     for (_, rec), h in zip(recs, product_hashes(keys, cod), strict=True):
         for a in rec.get("authors") or []:
             if a.get("id") == cod:
                 a["product_hash"] = h
-    data.setdefault("counts", {})["product_hash_repeated"] = len(keys) - len({hash_key(t, cod, k, y) for t, k, y in keys})
+    counts = data.setdefault("counts", {})
+    counts["product_hash_repeated"] = len(keys) - len({hash_key(t, cod, k, y) for t, k, y in keys})
+    counts["product_hash_from_text"] = sum(k[0] != rec.get("title") for k, (_, rec) in zip(keys, recs, strict=True))
 
 
 def count(out):
@@ -976,6 +990,7 @@ def count(out):
         "owner_by_name_variant",
         "owner_added",
         "product_hash_repeated",
+        "product_hash_from_text",
     ):
         if k in old:
             c[k] = old[k]
