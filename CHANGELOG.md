@@ -4,6 +4,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y l
 
 ## [Sin publicar]
 
+## [0.10.0] - 2026-11-03
+
 ### Cambiado
 - `product_hash` de los ítems sin título (sin letras ni dígitos en `title`, como las revisiones de Par evaluador): se calcula con su `text` (en las obras, `cvlac.text`) en lugar del título vacío, así que el ámbito, lo revisado, la revista o institución y el mes distinguen las revisiones de un mismo año. En los 4.596 CvLAC de la UdeA las repeticiones de ítems sin título bajan de 12.139 a 2.379. Cambia el hash de esos ítems; los de ítems con título no cambian. Nuevo conteo `product_hash_from_text`. gruplac-json aplica la misma regla. §21 del esquema y README.
 
@@ -89,7 +91,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y l
 - Tesis dirigidas con título, director, codirectores, estudiantes, institución con ROR, estado y programa.
 - Identificadores Scienti por DOI o título (`--scienti auto|full|off`, `--apikey`).
 
-[Sin publicar]: https://github.com/restrepo/cvlac-json/compare/v0.9.0...HEAD
+[Sin publicar]: https://github.com/restrepo/cvlac-json/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/restrepo/cvlac-json/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/restrepo/cvlac-json/compare/v0.8.1...v0.9.0
 [0.8.1]: https://github.com/restrepo/cvlac-json/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/restrepo/cvlac-json/compare/v0.7.0...v0.8.0
