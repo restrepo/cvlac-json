@@ -95,6 +95,21 @@ product_hash("Singlet Dirac dark matter streamlined", "0000707619", "work", 2024
 
 Cambia si cambia el título (más allá de esas diferencias), el año o el tipo. Reglas, ejemplos y cuánto coincide con el GrupLAC: [§21 del esquema](docs/cvlac_json_esquema.md#21-identificador-de-producto-product_hash).
 
+## Números de patente
+
+El id de una patente en el CvLAC (`patents[].identifiers[]` con `source` `patent`) está escrito como lo tecleó el investigador: `NC2019/0013866`, `PCT/IB2011/052609`, `US 10,085,948 B2`, `13016114`… `patent_numbers` lo traduce, con el país del registro, a los números que indexan las bases de patentes (The Lens, EPO, WIPO): oficina y número de la publicación o de la solicitud. No usa la red.
+
+```python
+from cvlac_json.patent_numbers import patent_numbers
+
+patent_numbers("NC2019/0013866", "Colombia")
+# [{'field': 'application', 'office': 'CO', 'number': '2019013866'}]
+patent_numbers("US 2018/0146662 A1", "Estados Unidos")
+# [{'field': 'publication', 'office': 'US', 'number': '20180146662'}]
+```
+
+Las reglas están en `src/cvlac_json/patent_numbers.py`. De los 487 ids distintos de los 4.596 CvLAC de la UdeA, 391 dan números; con ellos The Lens encontró 300 por número de publicación o de solicitud.
+
 ## Esquema del JSON
 
 El esquema completo, campo por campo, está en [docs/cvlac_json_esquema.md](docs/cvlac_json_esquema.md) y en versión navegable en [docs/cvlac_json_esquema.html](docs/cvlac_json_esquema.html).
