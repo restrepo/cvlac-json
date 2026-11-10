@@ -4,6 +4,9 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y l
 
 ## [Sin publicar]
 
+### Añadido
+- `cvlac_json.patent_numbers`: `patent_numbers(raw, country)` traduce el id de una patente del CvLAC (`NC2019/0013866`, `PCT/IB2011/052609`, `US 2018/0146662 A1`, radicados de la SIC…) a la oficina y el número de publicación o solicitud que indexan The Lens, EPO y WIPO; `office_code(country)` da el código de la oficina de un país. Sin red. README.
+
 ## [0.10.0] - 2026-11-03
 
 ### Cambiado
