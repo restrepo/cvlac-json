@@ -4,6 +4,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y l
 
 ## [Sin publicar]
 
+## [0.11.0] - 2026-11-10
+
 ### Añadido
 - `cvlac_json.patent_numbers`: `patent_numbers(raw, country)` traduce el id de una patente del CvLAC (`NC2019/0013866`, `PCT/IB2011/052609`, `US 2018/0146662 A1`, radicados de la SIC…) a la oficina y el número de publicación o solicitud que indexan The Lens, EPO y WIPO; `office_code(country)` da el código de la oficina de un país. Sin red. README.
 
@@ -94,7 +96,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y l
 - Tesis dirigidas con título, director, codirectores, estudiantes, institución con ROR, estado y programa.
 - Identificadores Scienti por DOI o título (`--scienti auto|full|off`, `--apikey`).
 
-[Sin publicar]: https://github.com/restrepo/cvlac-json/compare/v0.10.0...HEAD
+[Sin publicar]: https://github.com/restrepo/cvlac-json/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/restrepo/cvlac-json/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/restrepo/cvlac-json/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/restrepo/cvlac-json/compare/v0.8.1...v0.9.0
 [0.8.1]: https://github.com/restrepo/cvlac-json/compare/v0.8.0...v0.8.1
